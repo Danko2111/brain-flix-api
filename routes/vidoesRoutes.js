@@ -5,10 +5,10 @@ const router = express.Router();
 
 router
   .route("/")
-  // express get method used to respond with json data of the videos arr
+  //express get method used to respond with json data of the videos arr
   .get((req, res) => {
     fs.readFile("./data/videos.json", (err, data) => {
-      // catching errors and sending back a json error message
+      //catching errors and sending back a json error message
       if (err) {
         res.status(500).json({
           message: "Something went wrong, please try again later",
@@ -24,11 +24,11 @@ router
       }
     });
   })
-  //   express post method used to update the json with the new incomming video obj
+  //express post method used to update the json with the new incomming video obj
   .post((req, res) => {
     // reading the json
     fs.readFile("./data/videos.json", (err, data) => {
-      // throwing an error if there is an issue reading the file
+      //throwing an error if there is an issue reading the file
       if (err) {
         res.status(500).json({
           message:
@@ -40,6 +40,7 @@ router
       const newVideosArr = JSON.parse(data);
       // if else statement to catch any errors with the incomming request body
       if (req.body.title && req.body.description) {
+        // creating a new videos obj with incomming req data
         const newVideo = {
           id: uuidv4(),
           title: req.body.title,
@@ -106,6 +107,7 @@ router.post("/:id/comments", (req, res) => {
     //   parsing the read json file and setting it into an array
     const newVideosArr = JSON.parse(data);
     if (req.body.name && req.body.comment) {
+      // creating a new comment obj with incomming req data
       const newComment = {
         id: uuidv4(),
         name: req.body.name,
@@ -124,7 +126,7 @@ router.post("/:id/comments", (req, res) => {
           if (err) console.log(err);
         }
       );
-      res.json({ message: "Your comment posted successfully", erorr: err });
+      res.json({ message: "Your comment posted successfully" });
     } else {
       res.status(500).json({
         message:
