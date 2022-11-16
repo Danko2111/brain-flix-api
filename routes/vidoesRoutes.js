@@ -24,8 +24,11 @@ router
       }
     });
   })
+  //   express post method used to update the json with the new incomming video obj
   .post((req, res) => {
+    // reading the json
     fs.readFile("./data/videos.json", (err, data) => {
+      // throwing an error if there is an issue reading the file
       if (err) {
         res.status(500).json({
           message:
@@ -33,8 +36,9 @@ router
           error: err,
         });
       }
+      //   parsing the read json file and setting it into an array
       const newVideosArr = JSON.parse(data);
-      console.log(newVideosArr);
+      // if else statement to catch any errors with the incomming request body
       if (req.body.title && req.body.description) {
         const newVideo = {
           id: uuidv4(),
@@ -49,7 +53,9 @@ router
           timestamp: Date.now(),
           comments: [],
         };
+        // pushing the new video obj into our array
         newVideosArr.push(newVideo);
+        // writing the new array into json data and overriding the old json data
         fs.writeFile(
           "./data/videos.json",
           JSON.stringify(newVideosArr),
@@ -57,6 +63,8 @@ router
             if (err) console.log(err);
           }
         );
+        res.status(200).json(newVideo);
+        // catching errors with the incoming request body
       } else {
         res.status(500).json({
           message:
@@ -81,6 +89,48 @@ router.get("/:id", (req, res) => {
           return vid.id === req.params.id;
         })
       );
+    }
+  });
+});
+
+router.post("/:id/comments", (req, res) => {
+  fs.readFile("./data/videos.json", (err, data) => {
+    // throwing an error if there is an issue reading the file
+    if (err) {
+      res.status(500).json({
+        message:
+          "Something went wrong while trying to read the file, please try again later",
+        error: err,
+      });
+    }
+    //   parsing the read json file and setting it into an array
+    const newVideosArr = JSON.parse(data);
+    if (req.body.name && req.body.comment) {
+      const newComment = {
+        id: uuidv4(),
+        name: req.body.name,
+        comment: req.body.comment,
+        likes: 0,
+        timestamp: Date.now(),
+      };
+      const videoDetails = newVideosArr.find((vid) => {
+        return vid.id === req.params.id;
+      });
+      videoDetails.comments.push(newComment);
+      fs.writeFile(
+        "./data/videos.json",
+        JSON.stringify(newVideosArr),
+        (err) => {
+          if (err) console.log(err);
+        }
+      );
+      res.json({ message: "Your comment posted successfully", erorr: err });
+    } else {
+      res.status(500).json({
+        message:
+          "Your post body must contain ONLY the 'name: value' and the 'comment: value' key-value pairs ",
+        error: err,
+      });
     }
   });
 });
