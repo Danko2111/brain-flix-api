@@ -3,7 +3,7 @@ const express = require("express");
 const { v4: uuidv4 } = require("uuid");
 const router = express.Router();
 
-// creating a reusable redfile func that takes in a callback func to deal with the return of data
+// creating a reusable readfile and writefile func
 const readFileFunc = (readFileCallback) => {
   fs.readFile("./data/videos.json", "utf8", readFileCallback);
 };
@@ -57,7 +57,7 @@ router
           id: uuidv4(),
           title: req.body.title,
           channel: "placeholder",
-          image: "https://i.imgur.com/l2Xfgpl.jpg",
+          image: "http://localhost:5000/image0.jpeg",
           description: req.body.description,
           views: "0",
           likes: "0",
@@ -105,7 +105,7 @@ router.get("/:id", (req, res) => {
     }
   });
 });
-
+// express post method used to write a new comment into the specific video's comments array
 router.post("/:id/comments", (req, res) => {
   readFileFunc((err, data) => {
     // throwing an error if there is an issue reading the file
@@ -144,7 +144,9 @@ router.post("/:id/comments", (req, res) => {
     }
   });
 });
+// delete express method used to delete a specific comment by ID from a specific video by ID
 router.delete("/:videoId/comments/:commentsId", (req, res) => {
+  // read the videos.json
   readFileFunc((err, data) => {
     const videoId = req.params.videoId;
     const commentId = req.params.commentsId;
@@ -155,17 +157,23 @@ router.delete("/:videoId/comments/:commentsId", (req, res) => {
         error: err,
       });
     }
+    // parse the data into a js obj
     newVideosArr = JSON.parse(data);
+    // check for the incomming req vidId being present in the videos onj
     if (!newVideosArr.find((video) => video.id === videoId)) {
       res.send("This video ID doesnt exist");
     } else {
+      // if its present then set a var = to the specific video
       const selectedVideo = newVideosArr.find((video) => video.id === videoId);
+      //   check incomming req commentId being present in the video comment array
       if (!selectedVideo.comments.find((comment) => comment.id === commentId)) {
         res.send("This comment ID doesnt exist");
       } else {
+        // if its present then set a var = to the index of that comment
         const selectedCommentIndex = selectedVideo.comments.findIndex(
           (comment) => comment.id === commentId
         );
+        // deleting the comment by index from the comments array
         selectedVideo.comments.splice(selectedCommentIndex, 1);
         writeFileFunc(newVideosArr);
         res
@@ -175,4 +183,55 @@ router.delete("/:videoId/comments/:commentsId", (req, res) => {
     }
   });
 });
+// creating a express put endpoint to increment the video likes
+router.put("/:videoId/likes", (req, res) => {
+  // reading the videos.json file
+  readFileFunc((err, data) => {
+    if (err) {
+      res.json({
+        message:
+          "Something went wrong while trying to read the file, please try again later",
+        error: err,
+      });
+    }
+    // parsing the json file
+    const newVideosArr = JSON.parse(data);
+    // finding video by req params
+    const selectedVideo = newVideosArr.find(
+      (video) => video.id === req.params.videoId
+    );
+    // incrementing the video likes
+    selectedVideo.likes += 1;
+    writeFileFunc(newVideosArr);
+    res.status(200).json({ message: "sucessfully liked the video" });
+  });
+});
+// creating a express put endpoint to increment a specific comments likes
+router.put("/:videoId/comments/:commentId/likes", (req, res) => {
+  // reading the videos.json file
+  readFileFunc((err, data) => {
+    if (err) {
+      res.json({
+        message:
+          "Something went wrong while trying to read the file, please try again later",
+        error: err,
+      });
+    }
+    // parsing the json file
+    const newVideosArr = JSON.parse(data);
+    // finding video by req params
+    const selectedVideo = newVideosArr.find(
+      (video) => video.id === req.params.videoId
+    );
+    // finding a video comment by req params
+    const selectedVideoComment = selectedVideo.comments.find((comment) => {
+      return comment.id === req.params.commentId;
+    });
+    // incrementing the comment likes
+    selectedVideoComment.likes += 1;
+    writeFileFunc(newVideosArr);
+    res.status(200).json({ message: "sucessfully liked the comment" });
+  });
+});
+
 module.exports = router;
