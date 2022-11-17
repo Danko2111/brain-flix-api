@@ -60,7 +60,7 @@ router
           image: "http://localhost:5000/image0.jpeg",
           description: req.body.description,
           views: "0",
-          likes: "0",
+          likes: 0,
           duration: "3:47",
           video: "https://project-2-api.herokuapp.com/stream",
           timestamp: Date.now(),
