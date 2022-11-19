@@ -67,10 +67,9 @@ router
       // if else statement to catch any errors with the incomming request body
       if (req.body.title && req.body.description) {
         // creating a new videos obj with incomming req data
+        const imagePath = `http://localhost:5000/upload-video-preview.jpg`;
         if (req.file) {
-          let imagePath = `http://localhost:5000/${req.file.filename}`;
-        } else {
-          let imagePath = `http://localhost:5000/upload-video-preview.jpg`;
+          imagePath = `http://localhost:5000/${req.file.filename}`;
         }
 
         const newVideo = {
@@ -79,7 +78,7 @@ router
           channel: "placeholder",
           image: imagePath,
           description: req.body.description,
-          views: "0",
+          views: 0,
           likes: 0,
           duration: "3:47",
           video: "https://project-2-api.herokuapp.com/stream",
