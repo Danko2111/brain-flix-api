@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const videosRoutes = require("./routes/vidoesRoutes");
-const multer = require("multer");
 
 const app = express();
 const PORT = 5000;

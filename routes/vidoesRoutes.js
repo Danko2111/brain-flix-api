@@ -15,6 +15,7 @@ const writeFileFunc = (fileToWrite) => {
   });
 };
 
+// Multer functional code to store incoming image files
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "public/images");
@@ -25,6 +26,7 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
+// -------------------------------------------------
 
 router
   .route("/")
@@ -65,11 +67,17 @@ router
       // if else statement to catch any errors with the incomming request body
       if (req.body.title && req.body.description) {
         // creating a new videos obj with incomming req data
+        if (req.file) {
+          let imagePath = `http://localhost:5000/${req.file.filename}`;
+        } else {
+          let imagePath = `http://localhost:5000/upload-video-preview.jpg`;
+        }
+
         const newVideo = {
           id: uuidv4(),
           title: req.body.title,
           channel: "placeholder",
-          image: `http://localhost:5000/${req.file.filename}`,
+          image: imagePath,
           description: req.body.description,
           views: "0",
           likes: 0,
@@ -108,13 +116,16 @@ router.get("/:id", (req, res) => {
         error: err,
       });
     } else {
+      // parsing our json data
       const videosData = JSON.parse(data);
+      // finding a video that matches to the incomming post req.params
       const vidData = videosData.find((vid) => {
         return vid.id === req.params.id;
       });
+      // adding a view
       vidData.views += 1;
+      // overiding the data
       writeFileFunc(videosData);
-      console.log(vidData);
       // responding with the specific video details that match the req param id
       res.status(201).json(vidData);
     }
