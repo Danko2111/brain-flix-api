@@ -2,6 +2,7 @@ const fs = require("fs");
 const express = require("express");
 const { v4: uuidv4 } = require("uuid");
 const router = express.Router();
+const multer = require("multer");
 
 // creating a reusable readfile and writefile func
 const readFileFunc = (readFileCallback) => {
@@ -13,6 +14,17 @@ const writeFileFunc = (fileToWrite) => {
     if (err) console.log(err);
   });
 };
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "public/images");
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 router
   .route("/")
@@ -37,7 +49,7 @@ router
     });
   })
   //express post method used to update the json with the new incomming video obj
-  .post((req, res) => {
+  .post(upload.single("image"), (req, res) => {
     // reading the json
     readFileFunc((err, data) => {
       //throwing an error if there is an issue reading the file
@@ -57,7 +69,7 @@ router
           id: uuidv4(),
           title: req.body.title,
           channel: "placeholder",
-          image: "http://localhost:5000/image0.jpeg",
+          image: `http://localhost:5000/${req.file.filename}`,
           description: req.body.description,
           views: "0",
           likes: 0,
@@ -96,12 +108,15 @@ router.get("/:id", (req, res) => {
         error: err,
       });
     } else {
+      const videosData = JSON.parse(data);
+      const vidData = videosData.find((vid) => {
+        return vid.id === req.params.id;
+      });
+      vidData.views += 1;
+      writeFileFunc(videosData);
+      console.log(vidData);
       // responding with the specific video details that match the req param id
-      res.status(201).json(
-        JSON.parse(data).find((vid) => {
-          return vid.id === req.params.id;
-        })
-      );
+      res.status(201).json(vidData);
     }
   });
 });
