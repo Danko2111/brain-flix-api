@@ -121,8 +121,6 @@ router.get("/:id", (req, res) => {
       const vidData = videosData.find((vid) => {
         return vid.id === req.params.id;
       });
-      // adding a view
-      vidData.views += 1;
       // overiding the data
       writeFileFunc(videosData);
       // responding with the specific video details that match the req param id
